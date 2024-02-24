@@ -37,17 +37,11 @@ class DBStorage:
         """Query on the current database session"""
         obj_dict = {}
         classes = [User, State, City, Amenity, Place, Review]
-        if cls:
-            if type(cls) is str:
-                cls = eval(cls)
-            query = self.__session.query(cls)
-            for obj in query:
-                key = "{}.{}".format(type(elem).__name__, obj.id)
-                dic[key] = obj
-        else:
-            classes = [User, State, City, Amenity, Place, Review]
-            for c in classes:
-                objs = self.__session.query(c)
+        if cls is not None:
+            classes = [cls]
+
+        for c in classes:
+            objs = self.__session.query(c).all()
             for obj in objs:
                 key = '{}.{}'.format(type(obj).__name__, obj.id)
                 obj_dict[key] = obj
@@ -63,17 +57,10 @@ class DBStorage:
 
     def delete(self, obj=None):
         """Delete from the current database session"""
-        if obj:
+        if obj is not None:
             self.__session.delete(obj)
 
     def reload(self):
         """Create all tables in the database and create the current
         database session from the engine"""
         Base.metadata.create_all(self.__engine)
-        sec = sessionmaker(bind=self.__engine, expire_on_commit=False)
-        Session = scoped_session(sec)
-        self.__session = Session()
-
-    def close(self):
-        """Close SQLAlchemy close"""
-        self.__session.close()
