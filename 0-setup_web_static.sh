@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 # Sets up a web server for deployment of webstatic content
 
-# Check if Nginx is installed
-if ! command -v nginx > /dev/null; then
-    sudo apt-get update
-    sudo apt-get install -y nginx
-fi
+sudo apt-get update
+sudo apt-get install -y nginx
 
 mkdir -p /data/web_static/releases/test/
 mkdir -p /data/web_static/shared/
@@ -15,7 +12,6 @@ ln -sf /data/web_static/releases/test/ /data/web_static/current
 chown -R ubuntu /data/
 chgrp -R ubuntu /data/
 
-# Update Nginx configuration
 printf %s "server {
     listen 80 default_server;
     listen [::]80 default_server;
@@ -37,7 +33,6 @@ printf %s "server {
         root /var/www/html;
         internal;
     }
-}" | sudo tee /etc/nginx/sites-available/default > /dev/null
+}" > /etc/nginx/sites-available/default
 
-# Check Nginx configuration before restarting
-sudo nginx -t && sudo service nginx restart
+sudo service nginx restart
