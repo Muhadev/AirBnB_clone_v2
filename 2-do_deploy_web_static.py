@@ -8,9 +8,8 @@ from fabric.api import env, put, run, local
 from os.path import exists
 from datetime import datetime
 
-env.hosts = ['<IP web-01>', '<IP web-02>']
-env.user = '<your_username>'
-env.key_filename = '<path_to_your_ssh_key>'
+env.hosts = ["54.236.46.198", "52.91.123.123"]
+
 
 def do_deploy(archive_path):
     """
