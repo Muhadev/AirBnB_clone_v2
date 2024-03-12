@@ -1,38 +1,36 @@
-#!/usr/bin/env bash
-# Sets up a web server for deployment of webstatic content
+#!/bin/bash
 
-sudo apt-get update
-sudo apt-get install -y nginx
+# Install Nginx if not already installed
+if ! command -v nginx > /dev/null; then
+    sudo apt-get -y update
+    sudo apt-get -y install nginx
+fi
 
-mkdir -p /data/web_static/releases/test/
-mkdir -p /data/web_static/shared/
-echo "Holberton School" > /data/web_static/releases/test/index.html
-ln -sf /data/web_static/releases/test/ /data/web_static/current
+# Create necessary directories
+sudo mkdir -p /data/web_static/releases/test /data/web_static/shared
 
-chown -R ubuntu /data/
-chgrp -R ubuntu /data/
+# Create a fake HTML file
+sudo echo "<html>
+  <head>
+  </head>
+  <body>
+    Holberton School
+  </body>
+</html>" | sudo tee /data/web_static/releases/test/index.html > /dev/null
 
-printf %s "server {
-    listen 80 default_server;
-    listen [::]80 default_server;
-    add_header X-Served-By $HOSTNAME;
-    root /var/www/html;
-    index index.html index.htm;
+# Create symbolic link
+sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
 
-    location /hbnb_static {
-        alias /data/web_static/current;
-        index index.html index.htm;
-    }
+# Set ownership to ubuntu user and group recursively
+sudo chown -R ubuntu:ubuntu /data/
 
-    location /redirect_me {
-        return 301 https://www.youtube.com/;
-    }
+# Update Nginx configuration
+nginx_config="/etc/nginx/sites-available/default"
+nginx_alias="location /hbnb_static/ {\n\talias /data/web_static/current/;\n\t}\n"
 
-    error_page 404 /404.html;
-    location /404 {
-        root /var/www/html;
-        internal;
-    }
-}" > /etc/nginx/sites-available/default
+if ! grep -q "location /hbnb_static/" "$nginx_config"; then
+    sudo sed -i "/server_name _;/ a $nginx_alias" "$nginx_config"
+fi
 
+# Restart Nginx
 sudo service nginx restart
